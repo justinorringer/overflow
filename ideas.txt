@@ -1,0 +1,5 @@
+hide the narrative more
+- move the clear wave sounds to the end
+
+bucket sounds
+- modify amount of echo
