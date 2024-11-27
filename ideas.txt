@@ -3,3 +3,5 @@ hide the narrative more
 
 bucket sounds
 - modify amount of echo
+
+leonard references

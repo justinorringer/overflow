@@ -51,7 +51,7 @@ overflow:
         prints "overflow"
     kgate linen 	.5, 0, .5, .1
     a1  oscili kgate, 220, 1
-        out a1
+        outs a1, a1
 endin
 
 
@@ -72,7 +72,7 @@ afilt	tone	anoise, kcut
 aout    =  	    afilt*kenv
 
 gkReverb =      gkReverb + aout
-		out  	aout
+		outs  	aout, aout
 		dispfft	afilt, idur, 4096
 		endin
 
@@ -92,7 +92,7 @@ afilt	tone	aosc, kcut
 aout    =  	    afilt*kenv
 
 gkReverb =      gkReverb + aout
-		out  	aout
+		outs  	aout, aout
 		dispfft	afilt, idur, 4096
 		endin
 
