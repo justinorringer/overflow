@@ -7,15 +7,14 @@ nchnls = 2
 ;=====================================
 ; reverb initialization
 ;=====================================
-
 garvbsig  init      0
 
 
 ;=====================================
 ; delay initialization
 ;=====================================
-
 gasig     init      0
+
 
 ;====================
 ;
@@ -30,16 +29,19 @@ a2      delay     gasig,p4*2               ; DELAY=2.50
 gasig   =         0
         endin
 
+
 ;===================
 ; GLOBAL REVERB
 ;===================
-
         instr 99
 a1      reverb2   garvbsig, p4, p5
         outs      a1,a1
 garvbsig  =       0
         endin
 
+;=====================================
+; Main synth sound
+;=====================================
 	instr	101
 idur	=		p3
 iamp	=		p4
@@ -59,10 +61,50 @@ aout    =  	    afilt*kenv
 garvbsig  =     garvbsig+(aout*.15)
 	endin
 
+;=====================================
+; Waves
+; - a lot of help here from cSound book example
+;=====================================
+        instr	110
+idur	=		p3
+iamp	=		p4
+ifrq	=		p5
+iatk	=		p6
+irel	=		p7
+icut1	=		p8
+icut2	=		p9
+; xamp, irise, idec, iatdec
+kamp    linenr  iamp, idur*.2, idur*.75, 0.2
+kenv	linen	kamp, iatk, idur, irel
+kcut	expon	icut1, idur, icut2 ; exponential envelope where icut1 is the bottom and icut2 is the top
+kfrq    randi   ifrq, 0.5
+anoise	rand    kfrq
+
+afilt	tone	anoise, kcut
+aout    =  	afilt*kenv
+
+
+		out  	aout
+garvbsig =      garvbsig+(aout*.05)
+
+		dispfft	afilt, idur, 4096
+		endin
+
+
 ;------------------------
 ; 120 - 150 are for samples
 ; ------------------------
         instr 120
 a1, a2 diskin "sounds/whistling_1.wav"
         outs a1*12, a2*12
+        endin
+
+; instr start   dur    amp     num
+; i140	100	ignore 1	2
+        instr 140
+iamp    =   p4
+iindex  =   p5
+Sname   sprintf "sounds/bucket/bucket-%02d.wav", iindex
+a1, a2  diskin Sname
+        outs a1*iamp, a2*iamp
         endin
