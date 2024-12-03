@@ -1,5 +1,18 @@
 ;sine
 f 1 0 16384 10 1
+
+;this is for reverb settings
+;===========================
+;p1  p2   p3   p4   p5
+;instr    strt dur  rvbtime   hfdif
+i99  0    190  6    .2
+
+;this is for the delay line
+;==========================
+;p1  p2   p3   p4
+;instr    strt dur  dltime
+i98  0    190  .66
+
 i101	0.0		1.95	1	329.6275569128699	0.01	1.94	50	50
 i101	2.0		0.2	1	440.0	0.01	0.19	50	50
 i101	2.25		0.2	1	311.1269837220809	0.01	0.19	50	50
