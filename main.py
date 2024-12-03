@@ -224,6 +224,8 @@ g1.add_generator(bucket)
 # i 110	1		6.1   .2	10	2	5.8	 200	200
 # i 110	7		6.1   .2	10	1	5.8	 200	200
 # i 110	13		4     .2	10	.3	3	 150	100
+#
+# - Adding the pan var as well
 # ====================================
 wave_rhythm_pool_sec_2 = ['h', 'w+', 'h', 'q', 'w', 'q'] # 16 counts
 wave_rhythm_pool_sec_3 = ['w+w', 'w.', 'h'] # 16 counts
@@ -256,7 +258,8 @@ wave_sec_2 = Generator(
         ('atk', Itemstream(wave_r_atk_sec_2)),
         ('rel', Itemstream(wave_r_rel_sec_2)),
         ('cut1', Itemstream(wave_r_cut_sec_2)),
-        ('cut2', Itemstream(wave_r_cut_sec_2))
+        ('cut2', Itemstream(wave_r_cut_sec_2)),
+        ('pan', Itemstream((list(np.arange(.9, 1, .05)) * 10)[:len(wave_durations_sec_2)])),
     ],
     note_limit=len(wave_r_sec_2) - 1,
     start_time=g1_dur + 4
@@ -272,7 +275,8 @@ wave_sec_3 = Generator(
         ('atk', Itemstream(wave_r_atk_sec_3)),
         ('rel', Itemstream(wave_r_rel_sec_3)),
         ('cut1', Itemstream(wave_r_cut_sec_3)),
-        ('cut2', Itemstream(wave_r_cut_sec_3))
+        ('cut2', Itemstream(wave_r_cut_sec_3)),
+        ('pan', Itemstream((list(np.arange(1, .5, -.05)))[:len(wave_durations_sec_3)]))
     ],
     note_limit=len(wave_r_sec_3) - 1,
     start_time=g3_dur + 16

@@ -73,7 +73,8 @@ iatk	=		p6
 irel	=		p7
 icut1	=		p8
 icut2	=		p9
-; xamp, irise, idec, iatdec
+ipan    =               p10
+;               xamp, irise, idec, iatdec
 kamp    linenr  iamp, idur*.2, idur*.75, 0.2
 kenv	linen	kamp, iatk, idur, irel
 kcut	expon	icut1, idur, icut2 ; exponential envelope where icut1 is the bottom and icut2 is the top
@@ -83,20 +84,23 @@ anoise	rand    kfrq
 afilt	tone	anoise, kcut
 aout    =  	afilt*kenv
 
-
-		out  	aout
+	outs  	aout*ipan, aout*(1-ipan)
 garvbsig =      garvbsig+(aout*.05)
 
-		dispfft	afilt, idur, 4096
-		endin
+	dispfft	afilt, idur, 4096
+	endin
 
 
 ;------------------------
 ; 120 - 150 are for samples
 ; ------------------------
-        instr 120
-a1, a2 diskin "sounds/whistling_1.wav"
-        outs a1*12, a2*12
+        instr 130
+iamp    =   p4
+iindex  =   p5
+Sname   sprintf "sounds/whistling-%02d.wav", iindex
+a1, a2  diskin Sname
+        outs a1*iamp, a2*iamp
+garvbsig =      garvbsig+(a1*.05)
         endin
 
 ; instr start   dur    amp     num
@@ -104,7 +108,9 @@ a1, a2 diskin "sounds/whistling_1.wav"
         instr 140
 iamp    =   p4
 iindex  =   p5
-Sname   sprintf "sounds/bucket/bucket-%02d.wav", iindex
+kpan    =   .25
+Sname   sprintf "sounds/bucket-%02d.wav", iindex
 a1, a2  diskin Sname
-        outs a1*iamp, a2*iamp
+        outs a1*iamp*(kpan), a2*iamp*(1-kpan)
+garvbsig =      garvbsig+(a1*.05)
         endin
