@@ -14,18 +14,18 @@ with open("main.template.sco", "r") as f:
 
 class Section:
     # Collection of chords (each taking up a bar of 4)
-    def __init__(self, name, chords, notes, rhythms):
+    def __init__(self, name, chords, notes, rhythms, amplitude_range=(0.7, 1.2)):
         self.name = name
         self.chords = chords
         self.notes = notes
         self.rhythms = rhythms
 
-        self.select_attributes()
+        self.select_attributes(amplitude_range)
     
 
     # ====================================
     # Decides the duration, attack, release, and cut offs of each note
-    def select_attributes(self):
+    def select_attributes(self, amplitude_range):
         # idur	=		p3
         # iamp	=		p4
         # ipitch	=		p5
@@ -40,19 +40,22 @@ class Section:
         attacks = []
         releases = []
         cuts = []
+        amplitude = []
         for ry in self.rhythms:
             start_of_note_or_not = 0.05 if random.choice([True, False]) else 0
             dur = rhythm_to_duration(ry, 120) - start_of_note_or_not
             durations.append(rhythm_to_duration(ry, 120) - .05)
             attacks.append(0.01)
             releases.append(dur - 0.01)
-
             cuts.append(100)
-        
+
+            amplitude.append(random.uniform(amplitude_range[0], amplitude_range[1]) * (((len(self.rhythms) + 1) % 8) / 8))
+
         self.durations = durations
         self.attacks = attacks
         self.releases = releases
         self.cuts = cuts
+        self.amplitude = amplitude
 
         # going to store the total time for this section
         self.total_time = sum(durations)
@@ -65,7 +68,7 @@ class Section:
                                         tempo=120,
                                         notetype=notetypes.rhythm)),
                 (keys.duration, Itemstream(self.durations)),
-                (keys.amplitude, 1),
+                (keys.amplitude, Itemstream(self.amplitude)),
                 (keys.frequency, Itemstream(self.notes,
                                         notetype=notetypes.pitch)),
                 ('atk', Itemstream(self.attacks)),
@@ -97,15 +100,21 @@ def generate_rhythm_sequences(values, num_sequences):
 # Gminor, Bflat, Cmin, Bflat, Cmin, Bflat, Dminor x2, Eflat x2, Bflat, Cmin, Bflat, Cmin, Bflat
 # interesting notes in scales
 Bflat_scale = ["bf", "c", "c", "d", "d", "d", "ef3", "f", "af", "a"]
+Bflat_scale_low = ["bf2", "c3", "c1", "d2", "d", "d", "ef3", "af", "a"]
 Cmin_scale = ["c", "d4", "ef", "f", "g", "af2", "bf"]
 Gmin_scale = ["g", "a", "bf", "c", "d", "ef", "f", "g"]
 Dmin_scale = ["d", "d", "ef", "f", "f", "g", "a", "bf", "c"]
+Dmin_scale_high = ["d8", "d7", "ef", "f", "f8", "g7", "a9", "bf9", "c"]
 Eflat_scale = ['ef3', 'f', 'fs', 'g', 'gs', 'a', 'bf', 'c']
+Eflat_scale_high = ['ef3', 'f7', 'fs8', 'g9', 'gs', 'a8', 'bf8', 'c8', 'cs']
 common_phrase = ["d", "f", "d", "f", "bf", "f"]
+common_phrase_low = ["d2", "f", "d2", "f1", "bf2", "f3"]
+common_phrase_high = ["d8", "f", "d", "f7", "bf", "f8"]
 Bflat = ["b3", "d", "f"]
 Cmin = ["c4", "ds", "g", "a"]
 Gmin = ["g4", "b", "d4", "f"]
 Dmin = ["d3", "f", "a"]
+Dmin_high = ["d8", "f7"]
 Eflat = ["ef2", "ef4", "g", "as"] 
 pitches = [
     [Gmin] + common_phrase + Gmin_scale,
@@ -114,6 +123,7 @@ pitches = [
     [Bflat] + common_phrase + Bflat_scale,
     [Cmin] + Cmin_scale,
     [Bflat] + Bflat_scale,
+    [Bflat] + common_phrase + Dmin_scale,
 ]
 
 pitches_2 = [
@@ -130,6 +140,24 @@ pitches_3 = [
     Cmin + Cmin_scale,
     Bflat + Bflat_scale,
     Cmin + Cmin_scale,
+    Bflat_scale + common_phrase + common_phrase,
+    Cmin_scale,
+]
+
+pitches_2_high = [
+    Dmin_scale_high + common_phrase_high,
+    [Dmin_high] + common_phrase_high,
+    Eflat_scale_high,
+    Eflat_scale_high,
+    [Dmin_high] + common_phrase_high,
+    Eflat_scale_high,
+]
+
+pitches_4_low = [
+    [Bflat] + Bflat_scale_low,
+    Bflat + common_phrase_low,
+    [Eflat] + Bflat_scale_low,
+    Eflat + common_phrase_low,
 ]
 
 def generate_pitches(pitches, num_notes_per_chord, num_rests_per_chord=0):
@@ -141,30 +169,62 @@ def generate_pitches(pitches, num_notes_per_chord, num_rests_per_chord=0):
 section_1 = Section(
     "section 1",
     ["gmin", "bflat", "cmin", "bflat", "cmin", "bflat"],
-    generate_pitches(pitches, len(rhythm_pool_1), 6),
-    generate_rhythm_sequences(rhythm_pool_1, 6)
+    generate_pitches(pitches, len(rhythm_pool_1), 8),
+    generate_rhythm_sequences(rhythm_pool_1, 7),
+    amplitude_range=(0.7, 1.1)
 )
 section_2 = Section(
     "section 2",
     ["dmin", "dmin", "eflat", "eflat", "bflat", "eflat"],
     generate_pitches(pitches_2, len(rhythm_pool_2), 1),
-    generate_rhythm_sequences(rhythm_pool_2, 6)
+    generate_rhythm_sequences(rhythm_pool_2, 6),
+    amplitude_range=(.9, 1.3)
+)
+section_2_high = Section(
+    "section 2 - high",
+    ["dmin", "dmin", "eflat", "eflat", "bflat", "eflat"],
+    generate_pitches(pitches_2_high, len(rhythm_pool_2), 10),
+    generate_rhythm_sequences(rhythm_pool_2, 6),
+    amplitude_range=(.7, .9)
 )
 section_3 = Section(
     "section 3",
     ["bflat", "cmin", "bflat", "cmin"],
     generate_pitches(pitches_3, len(rhythm_pool_1), 4),
-    generate_rhythm_sequences(rhythm_pool_1, 4)
+    generate_rhythm_sequences(rhythm_pool_1, 6),
+    amplitude_range=(0.6, 0.8)
+)
+section_3_high = Section(
+    "section 3 - high",
+    ["bflat", "cmin", "bflat", "cmin"],
+    generate_pitches(pitches_2_high, len(rhythm_pool_2), 10), # dmin might sound really good up there
+    generate_rhythm_sequences(rhythm_pool_2, 6),
+    amplitude_range=(.4, .7)
+)
+
+section_4_low = Section(
+    "section_4 - low",
+    ["bflat"],
+    generate_pitches(pitches_4_low, 16, 3),
+    generate_rhythm_sequences(rhythm_pool_1[:64], 4),
+    amplitude_range=(0.4, 0.5)
 )
 g1 = section_1.create_generator(8, starting_template)
 g1_dur = g1.start_time + section_1.total_time
-g2 = section_2.create_generator(start_time=(g1_dur), template="section 2")
+g2 = section_2.create_generator(start_time=(g1_dur))
 g2_dur = g1_dur + section_2.total_time
-g3 = section_3.create_generator(start_time=(g2_dur), template="section 3")
+g3 = section_3.create_generator(start_time=(g2_dur))
 g3_dur = g2_dur + section_3.total_time
 
 g1.add_generator(g2)
 g1.add_generator(g3)
+
+# g2_high = section_2_high.create_generator(start_time=(g1_dur - 4)) ; cutting this one
+g3_high = section_3_high.create_generator(start_time=(g2_dur + 4))
+g4_low = section_4_low.create_generator(start_time=(g3_dur - 8))
+# g1.add_generator(g2_high)
+g1.add_generator(g3_high)
+g1.add_generator(g4_low)
 
 # ====================================
 # Bucket generator
@@ -180,7 +240,6 @@ def generate_bucket_queues(duration, amp_mod=1.2, pattern=[2**3, 2**2, 2**1]):
     sum = 0
 
     while sum < duration:
-        print(sum)
         for p in pattern:
             if sum + p <= duration:
                 counts.append(p)
@@ -227,26 +286,28 @@ g1.add_generator(bucket)
 #
 # - Adding the pan var as well
 # ====================================
-wave_rhythm_pool_sec_2 = ['h', 'w+', 'h', 'q', 'w', 'q'] # 16 counts
-wave_rhythm_pool_sec_3 = ['w+w', 'w.', 'h'] # 16 counts
+wave_rhythm_pool_sec_2 = ['w', 'w+','q', 'w', 'q'] # 16 counts
+wave_rhythm_pool_sec_3 = ['w+w+w', 'h', 'h'] # 16 counts
 wave_r_sec_2 = generate_rhythm_sequences(wave_rhythm_pool_sec_2, 6)
-wave_r_sec_3 = generate_rhythm_sequences(wave_rhythm_pool_sec_3, 5)
+wave_r_sec_3 = generate_rhythm_sequences(wave_rhythm_pool_sec_3, 6)
 
 wave_durations_sec_2 = [rhythm_to_duration(r, 120) for r in wave_r_sec_2]
 wave_durations_sec_3 = [rhythm_to_duration(r, 120) for r in wave_r_sec_3]
 
-wave_r_amp_sec_2 = (list(np.arange(.25, .4, .05)) * 10)[:len(wave_durations_sec_2)]
-wave_r_amp_sec_3 = list(np.arange(.1, .2, .05))[:len(wave_durations_sec_3)]
+wave_r_amp_sec_2 = (list(np.arange(.20, .35, .05)) * 10)[:len(wave_durations_sec_2) - 3] + [0, 0, 0]
+wave_r_amp_sec_3 = (list(np.arange(.05, .1, .05)) * 10)[:len(wave_durations_sec_3) - 4] + [0, 0, 0, 0]
 
 # attack and releases
-wave_r_atk_sec_2 = [random.uniform(0.1, 0.5) for _ in range(len(wave_durations_sec_2))]
+wave_r_atk_sec_2 = [random.uniform(0.1, 0.5) for _ in range(len(wave_durations_sec_2) - 2)] + [0, 0]
 wave_r_atk_sec_3 = [random.uniform(0.1, 0.5) for _ in range(len(wave_durations_sec_3))]
 wave_r_rel_sec_2 = [dur * .98 for dur in wave_durations_sec_2]
-wave_r_rel_sec_3 = [dur * .8 for dur in wave_durations_sec_3]
+wave_r_rel_sec_3 = [dur * .6 for dur in wave_durations_sec_3]
 
 # i want the values to change across the waves for cuts, not stick out
-wave_r_cut_sec_2 = [random.uniform(50, 200) for _ in range(len(wave_durations_sec_2))]
-wave_r_cut_sec_3 = [random.uniform(100, 200) for _ in range(len(wave_durations_sec_3))]
+wave_r_cut_1_sec_2 = [random.uniform(50, 200) for _ in range(len(wave_durations_sec_2))]
+wave_r_cut_2_sec_2 = [random.uniform(50, 200) for _ in range(len(wave_durations_sec_2))]
+wave_r_cut_1_sec_3 = [random.uniform(100, 200) for _ in range(len(wave_durations_sec_3))]
+wave_r_cut_2_sec_3 = [random.uniform(100, 200) for _ in range(len(wave_durations_sec_3))]
 
 wave_sec_2 = Generator(
     streams=[
@@ -254,11 +315,11 @@ wave_sec_2 = Generator(
         (keys.rhythm, Itemstream(wave_r_sec_2, notetype=notetypes.rhythm, tempo=120)),
         (keys.duration, Itemstream(wave_durations_sec_2)),
         (keys.amplitude, Itemstream(wave_r_amp_sec_2)),
-        (keys.frequency, 10),
+        (keys.frequency, Itemstream((list(np.arange(6, 12, .05)) * 10)[:len(wave_durations_sec_2)])),
         ('atk', Itemstream(wave_r_atk_sec_2)),
         ('rel', Itemstream(wave_r_rel_sec_2)),
-        ('cut1', Itemstream(wave_r_cut_sec_2)),
-        ('cut2', Itemstream(wave_r_cut_sec_2)),
+        ('cut1', Itemstream(wave_r_cut_1_sec_2)),
+        ('cut2', Itemstream(wave_r_cut_2_sec_2)),
         ('pan', Itemstream((list(np.arange(.9, 1, .05)) * 10)[:len(wave_durations_sec_2)])),
     ],
     note_limit=len(wave_r_sec_2) - 1,
@@ -271,11 +332,11 @@ wave_sec_3 = Generator(
         (keys.rhythm, Itemstream(wave_r_sec_3, notetype=notetypes.rhythm, tempo=120)),
         (keys.duration, Itemstream(wave_durations_sec_3)),
         (keys.amplitude, Itemstream(wave_r_amp_sec_3)),
-        (keys.frequency, 10),
+        (keys.frequency, Itemstream((list(np.arange(6, 12, .05)) * 10)[:len(wave_durations_sec_3)])),
         ('atk', Itemstream(wave_r_atk_sec_3)),
         ('rel', Itemstream(wave_r_rel_sec_3)),
-        ('cut1', Itemstream(wave_r_cut_sec_3)),
-        ('cut2', Itemstream(wave_r_cut_sec_3)),
+        ('cut1', Itemstream(wave_r_cut_1_sec_3)),
+        ('cut2', Itemstream(wave_r_cut_2_sec_3)),
         ('pan', Itemstream((list(np.arange(1, .5, -.05)))[:len(wave_durations_sec_3)]))
     ],
     note_limit=len(wave_r_sec_3) - 1,
@@ -287,10 +348,10 @@ g1.add_generator(wave_sec_3)
 
 g1.generate_notes()
 score_string = g1.generate_score_string()
-print(score_string)
 
 with open("main.generated.sco", "w") as f:
     f.write(score_string)
+    print("Saved score file to main.generated.sco")
 
 csound_utils.play_csound("main.orc", g1, 
                             args_list=["-+rtaudio=pa_cb", "-odac", "--nchnls=2", "--nchnls_i=2", "--limiter=1", "--print_version", "--env:CSNOSTOP=yes"], 
